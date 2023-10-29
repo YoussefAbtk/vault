@@ -99,6 +99,9 @@ i_pool.withdraw(i_weth, amount, to);
     }
     function chargeFees(address callFeeRecipient, uint256 rewards ) internal {
         uint256 keeperReward= (rewards*3) /100;
+        if(keeperReward ==0) {
+            revert NeedMoreThanZero();
+        }
         IERC20(output).safeTransfer(callFeeRecipient, keeperReward);
 
     }

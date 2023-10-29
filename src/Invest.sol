@@ -63,23 +63,30 @@ revert NotWallet();
     _;
     }
 
-  function withdraw() external onlyWallet {
+  function withdraw(uint256 amount, address to) external  {
+    if(amount==0) {
+        revert NeedMoreThanZero();
+    } 
+    if(to == address(0)) {
+        revert NotZeroAddress();
+    }
 
+_withdrawFromAave(amount,  to);
   }
-
-    function _supplyLiquidityInAave(address token, uint256 amount) private moreThanZero(amount) {
-        if (token == address(0)) {
-            revert NotZeroAddress();
-        }
-        if (IERC20(token).balanceOf(address(i_wallet)) == 0) {
+function _withdrawFromAave( uint256 amount, address to) private {
+i_pool.withdraw(i_weth, amount, to);
+}
+    function _supplyLiquidityInAave( uint256 amount) private moreThanZero(amount) {
+        IERC20 _token = IERC20(i_weth);
+        if (IERC20(_token).balanceOf(address(i_wallet)) == 0) {
             revert TokenNotAvailable();
         }
-        IERC20 _token = IERC20(token);
+        
         uint16 referalCode = 0;
         i_wallet.transferFundsToInvest( amount); 
         _token.approve(address(i_pool), amount);
         //i_wallet.giveAllowanceToProtocol(token, amount,0x4d5F47FA6A74757f35C14fD3a6Ef8E3C9BC514E8); 
-        i_pool.supply(token, amount, address(this), referalCode);
+        i_pool.supply(address(i_weth), amount, address(this), referalCode);
         
     }
     function harvest(address callrecepient) external  {
@@ -88,7 +95,7 @@ revert NotWallet();
        uint256 rewards = IAaveV3Incentives(INCENTIVE).claimRewards(assets, type(uint256).max, address(this));
        chargeFees(callrecepient, rewards);
        uint256 amountOut = _uniswapRouterSwap(address(i_aToken), i_weth,0,rewards-(rewards*3) /100); 
-      _supplyLiquidityInAave(i_weth, amountOut);
+      _supplyLiquidityInAave(amountOut);
     }
     function chargeFees(address callFeeRecipient, uint256 rewards ) internal {
         uint256 keeperReward= (rewards*3) /100;
@@ -120,8 +127,8 @@ revert NotWallet();
         amountOut = i_router.exactInputSingle(params);
     }
 
-    function supplyInAaveProtocol(address token, uint256 amount) external {
-        _supplyLiquidityInAave(token, amount);
+    function supplyInAaveProtocol( uint256 amount) external {
+        _supplyLiquidityInAave( amount);
     }
     function getATokenAddress() external view returns(address){
         return address(i_aToken);

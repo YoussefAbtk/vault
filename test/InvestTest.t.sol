@@ -62,5 +62,11 @@ contract InvestTest is Test {
         invest.supplyInAaveProtocol(wethAddress,5 ether);
         invest.harvest(address(0));
     }
+    function testWithdrawIsWorkingProperly() external {
+         invest.supplyInAaveProtocol(wethAddress,5 ether);
+         invest._withdrawFromAave(5 ether, address(this));
+         assertEq(iweth.balanceOf(address(this)), 5 ether);
+         console.log(iweth.balanceOf(address(this)));
+    }
     
 }

@@ -76,12 +76,12 @@ contract Wallet is Ownable, ERC4626{
     function transferFundsToInvest( uint256 amount ) public onlyInvest {
         s_asset.safeTransfer(s_invest, amount);
     }
-    function withdrawFromInvest() external {}
-    function depositInInvest(uint256 amount) external {
+    function withdrawFromInvest() external {
+        
+    }
+    function depositAndInvest(uint256 amount) external {
         deposit( amount, msg.sender); 
-       
-        
-        
+        transferFundsToInvest(amount); 
 
     }
     function withdraw(uint256 assets, address receiver, address owner) public override returns(uint256) {
